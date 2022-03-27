@@ -97,14 +97,14 @@ installTools(){
 }
 # 恢复配置
 resetNginxConfig(){
-    `cp -Rrf /tmp/mack-a/nginx/nginx.conf /etc/nginx/nginx.conf`
+    `cp -Rrf /tmp/cary-sas/nginx/nginx.conf /etc/nginx/nginx.conf`
     rm -rf /etc/nginx/conf.d/5NX2O9XQKP.conf
     echoColor green "\n恢复配置完毕"
 }
 # 备份
 bakConfig(){
-    mkdir -p /tmp/mack-a/nginx
-    `cp -Rrf /etc/nginx/nginx.conf /tmp/mack-a/nginx/nginx.conf`
+    mkdir -p /tmp/cary-sas/nginx
+    `cp -Rrf /etc/nginx/nginx.conf /tmp/cary-sas/nginx/nginx.conf`
 }
 # 安装证书
 installTLS(){
@@ -147,22 +147,22 @@ installTLS(){
         resetNginxConfig
         exit 0;
     fi
-    sudo ~/.acme.sh/acme.sh --issue -d ${domain} --standalone -k ec-256 >/dev/null
-    ~/.acme.sh/acme.sh --installcert -d ${domain} --fullchainpath /tmp/mack-a/nginx/${domain}.crt --keypath /tmp/mack-a/nginx/${domain}.key --ecc >/dev/null
-    if [[ -z `cat /tmp/mack-a/nginx/${domain}.key` ]]
+    sudo ~/.acme.sh/acme.sh --issue -d ${domain} --standalone >/dev/null
+    ~/.acme.sh/acme.sh --installcert -d ${domain} --fullchainpath /tmp/cary-sas/nginx/${domain}.crt --keypath /tmp/cary-sas/nginx/${domain}.key >/dev/null
+    if [[ -z `cat /tmp/cary-sas/nginx/${domain}.key` ]]
     then
         echoColor red "证书key生成失败，请重新运行"
         resetNginxConfig
         exit
-    elif [[ -z `cat /tmp/mack-a/nginx/${domain}.crt` ]]
+    elif [[ -z `cat /tmp/cary-sas/nginx/${domain}.crt` ]]
     then
         echoColor red "证书crt生成失败，请重新运行"
         resetNginxConfig
         exit
     fi
     echoColor green "证书生成成功"
-    echoColor green "证书目录/tmp/mack-a/nginx"
-    ls /tmp/mack-a/nginx
+    echoColor green "证书目录/tmp/cary-sas/nginx"
+    ls /tmp/cary-sas/nginx
 
     resetNginxConfig
     if [[ ${nginxStatus} = 2  ]]
@@ -185,7 +185,7 @@ init(){
     echoColor green "   9.下个版本会加入通配符证书生成[todo]"
     echoColor green "   10.可以生成多个不同域名的证书[包含子域名]，具体速率请查看[https://letsencrypt.org/zh-cn/docs/rate-limits/]"
     echoColor green "   11.兼容Centos、Ubuntu、Debian"
-    echoColor green "   12.Github[https://github.com/mack-a]"
+    echoColor green "   12.Github[https://github.com/cary-sas]"
     echoColor red "=============================="
     echoColor yellow "请输入[y]执行脚本，[任意]结束:"
     read isExecStatus

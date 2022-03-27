@@ -851,19 +851,19 @@ installTLS() {
 	echoContent skyBlue "\n progress  $1/${totalProgress} : Apply for a TLS certificate\n"
 	local tlsDomain=${domain}
 	# Install TLS
-	if [[ -f "/etc/v2ray-agent/tls/${tlsDomain}.crt" && -f "/etc/v2ray-agent/tls/${tlsDomain}.key" && -n $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]] || [[ -d "$HOME/.acme.sh/${tlsDomain}_ecc" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" ]]; then
+	if [[ -f "/etc/v2ray-agent/tls/${tlsDomain}.crt" && -f "/etc/v2ray-agent/tls/${tlsDomain}.key" && -n $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]] || [[ -d "$HOME/.acme.sh/${tlsDomain}" && -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.cer" ]]; then
 		# Have a certificate
 		echoContent green " ---> Certificate"
 		checkTLStatus "${tlsDomain}"
 		if [[ "${tlsStatus}" == "expired" ]]; then
-			rm -rf $HOME/.acme.sh/${tlsDomain}_ecc/*
+			rm -rf $HOME/.acme.sh/${tlsDomain}/*
 			rm -rf /etc/v2ray-agent/tls/${tlsDomain}*
 			installTLS "$1"
 		else
 			echoContent green " ---> Certificate is valid"
 
 			if ! ls /etc/v2ray-agent/tls/ | grep -q "${tlsDomain}.crt" || ! ls /etc/v2ray-agent/tls/ | grep -q "${tlsDomain}.key" || [[ -z $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]]; then
-				sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${tlsDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" --ecc >/dev/null
+				sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${tlsDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" >/dev/null
 			else
 				echoContent yellow " ---> If you have not expired, please choose[n]\n"
 				read -r -p "Do you reinstall?[y/n]:" reInstallStatus
@@ -873,16 +873,16 @@ installTLS() {
 				fi
 			fi
 		fi
-	elif [[ -d "$HOME/.acme.sh" ]] && [[ ! -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" || ! -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" ]]; then
+	elif [[ -d "$HOME/.acme.sh" ]] && [[ ! -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.cer" || ! -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.key" ]]; then
 		echoContent green " ---> Install TLS certificate"
 		if [[ -n "${pingIPv6}" ]]; then
-			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone -k ec-256 --server letsencrypt --listen-v6 >> /etc/v2ray-agent/tls/acme.log
+			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone --server zerossl --listen-v6 >> /etc/v2ray-agent/tls/acme.log
 		else
-			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone -k ec-256 --server letsencrypt >> /etc/v2ray-agent/tls/acme.log
+			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone --server zerossl >> /etc/v2ray-agent/tls/acme.log
 		fi
 
-		if [[ -d "$HOME/.acme.sh/${tlsDomain}_ecc" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" ]]; then
-			sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${tlsDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" --ecc >/dev/null
+		if [[ -d "$HOME/.acme.sh/${tlsDomain}" && -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}/${tlsDomain}.cer" ]]; then
+			sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${tlsDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" >/dev/null
 		fi
 
 		if [[ ! -f "/etc/v2ray-agent/tls/${tlsDomain}.crt" || ! -f "/etc/v2ray-agent/tls/${tlsDomain}.key"  ]] || [[ -z $(cat "/etc/v2ray-agent/tls/${tlsDomain}.key") || -z $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]]; then
@@ -957,7 +957,7 @@ nginxBlog() {
 		if [[ "${nginxBlogInstallStatus}" == "y" ]]; then
 			rm -rf /usr/share/nginx/html
 			randomNum=$((RANDOM%6+1))
-			wget -q -P /usr/share/nginx https://raw.githubusercontent.com/mack-a/v2ray-agent/master/fodder/blog/unable/html${randomNum}.zip >/dev/null
+			wget -q -P /usr/share/nginx https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/fodder/blog/unable/html${randomNum}.zip >/dev/null
 			unzip -o /usr/share/nginx/html${randomNum}.zip -d /usr/share/nginx/html >/dev/null
 			rm -f /usr/share/nginx/html${randomNum}.zip*
 			echoContent green " ---> Add a camouflage site successfully"
@@ -965,7 +965,7 @@ nginxBlog() {
 	else
 		randomNum=$((RANDOM%6+1))
 		rm -rf /usr/share/nginx/html
-		wget -q -P /usr/share/nginx https://raw.githubusercontent.com/mack-a/v2ray-agent/master/fodder/blog/unable/html${randomNum}.zip >/dev/null
+		wget -q -P /usr/share/nginx https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/fodder/blog/unable/html${randomNum}.zip >/dev/null
 		unzip -o /usr/share/nginx/html${randomNum}.zip -d /usr/share/nginx/html >/dev/null
 		rm -f /usr/share/nginx/html${randomNum}.zip*
 		echoContent green " ---> Add a camouflage site successfully"
@@ -1007,8 +1007,8 @@ installCronTLS() {
 renewalTLS() {
 	echoContent skyBlue "\n progress  1/1 : Update certificate"
 
-	if [[ -d "$HOME/.acme.sh/${currentHost}_ecc" ]] && [[ -f "$HOME/.acme.sh/${currentHost}_ecc/${currentHost}.key" ]] && [[ -f "$HOME/.acme.sh/${currentHost}_ecc/${currentHost}.cer" ]]; then
-		modifyTime=$(stat $HOME/.acme.sh/${currentHost}_ecc/${currentHost}.cer | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
+	if [[ -d "$HOME/.acme.sh/${currentHost}" ]] && [[ -f "$HOME/.acme.sh/${currentHost}/${currentHost}.key" ]] && [[ -f "$HOME/.acme.sh/${currentHost}/${currentHost}.cer" ]]; then
+		modifyTime=$(stat $HOME/.acme.sh/${currentHost}/${currentHost}.cer | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
 
 		modifyTime=$(date +%s -d "${modifyTime}")
 		currentTime=$(date +%s)
@@ -1030,7 +1030,7 @@ renewalTLS() {
 			echoContent yellow " ---> Regeneration certificate"
 			handleNginx stop
 			sudo "$HOME/.acme.sh/acme.sh" --cron --home "$HOME/.acme.sh"
-			sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${currentHost}" --fullchainpath /etc/v2ray-agent/tls/"${currentHost}.crt" --keypath /etc/v2ray-agent/tls/"${currentHost}.key" --ecc
+			sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${currentHost}" --fullchainpath /etc/v2ray-agent/tls/"${currentHost}.crt" --keypath /etc/v2ray-agent/tls/"${currentHost}.key"
 			reloadCore
 		else
 			echoContent green " ---> Certificate is valid"
@@ -1043,8 +1043,8 @@ renewalTLS() {
 checkTLStatus() {
 
 	if [[ -n "$1" ]]; then
-		if [[ -d "$HOME/.acme.sh/$1_ecc" ]] && [[ -f "$HOME/.acme.sh/$1_ecc/$1.key" ]] && [[ -f "$HOME/.acme.sh/$1_ecc/$1.cer" ]]; then
-			modifyTime=$(stat $HOME/.acme.sh/$1_ecc/$1.key | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
+		if [[ -d "$HOME/.acme.sh/$1" ]] && [[ -f "$HOME/.acme.sh/$1/$1.key" ]] && [[ -f "$HOME/.acme.sh/$1/$1.cer" ]]; then
+			modifyTime=$(stat $HOME/.acme.sh/$1/$1.key | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
 
 			modifyTime=$(date +%s -d "${modifyTime}")
 			currentTime=$(date +%s)
@@ -2335,7 +2335,7 @@ customCDNIP() {
 	echoContent red "\n=============================================================="
 	echoContent yellow "# Cautions"
 	echoContent yellow "\n Tutorial Address:"
-	echoContent skyBlue "https://github.com/mack-a/v2ray-agent/blob/master/documents/optimize_V2Ray.md"
+	echoContent skyBlue "https://github.com/cary-sas/v2ray-agent/blob/master/documents/optimize_V2Ray.md"
 	echoContent red "\n If you do not know about Cloudflare optimization, please do not use"
 	echoContent yellow "\n 1.china Mobile:104.16.123.96"
 	echoContent yellow " 2.china Unicom:www.cloudflare.com"
@@ -2686,9 +2686,9 @@ updateNginxBlog() {
 #		rm -rf /usr/share/nginx/html
 		rm -rf /usr/share/nginx/*
 		if wget --help | grep -q show-progress; then
-			wget -c -q --show-progress -P /usr/share/nginx "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/fodder/blog/unable/html${selectInstallNginxBlogType}.zip" >/dev/null
+			wget -c -q --show-progress -P /usr/share/nginx "https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/fodder/blog/unable/html${selectInstallNginxBlogType}.zip" >/dev/null
 		else
-			wget -c -P /usr/share/nginx "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/fodder/blog/unable/html${selectInstallNginxBlogType}.zip" >/dev/null
+			wget -c -P /usr/share/nginx "https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/fodder/blog/unable/html${selectInstallNginxBlogType}.zip" >/dev/null
 		fi
 
 		unzip -o "/usr/share/nginx/html${selectInstallNginxBlogType}.zip" -d /usr/share/nginx/html >/dev/null
@@ -3097,9 +3097,9 @@ updateV2RayAgent() {
 	echoContent skyBlue "\n progress  $1/${totalProgress} : Update V2RAY-Agent script"
 	rm -rf /etc/v2ray-agent/install.sh
 	if wget --help | grep -q show-progress; then
-		wget -c -q --show-progress -P /etc/v2ray-agent/ -N --no-check-certificate "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/install.sh"
+		wget -c -q --show-progress -P /etc/v2ray-agent/ -N --no-check-certificate "https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/install.sh"
 	else
-		wget -c -q -P /etc/v2ray-agent/ -N --no-check-certificate "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/install.sh"
+		wget -c -q -P /etc/v2ray-agent/ -N --no-check-certificate "https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/install.sh"
 	fi
 
 	sudo chmod 700 /etc/v2ray-agent/install.sh
@@ -3109,7 +3109,7 @@ updateV2RayAgent() {
 	echoContent yellow " ---> Please manually[vasma]Open script"
 	echoContent green " ---> current version:${version}\n"
 	echoContent yellow "If the update is unsuccessful, please manually perform the following command.\n"
-	echoContent skyBlue "wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/mack-a/v2ray-agent/master/install.sh" && chmod 700 /root/install.sh && /root/install.sh"
+	echoContent skyBlue "wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/cary-sas/v2ray-agent/master/install.sh" && chmod 700 /root/install.sh && /root/install.sh"
 	echo
 	exit 0
 }
@@ -3222,7 +3222,7 @@ EOF
 # Script shortcut
 aliasInstall() {
 
-	if [[ -f "$HOME/install.sh" ]] && [[ -d "/etc/v2ray-agent" ]] && grep <$HOME/install.sh -q "author：mack-a"; then
+	if [[ -f "$HOME/install.sh" ]] && [[ -d "/etc/v2ray-agent" ]] && grep <$HOME/install.sh -q "author：cary-sas"; then
 		mv "$HOME/install.sh" /etc/v2ray-agent/install.sh
 		local vasmaType=
 		if [[ -d "/usr/bin/" ]] ; then
@@ -3572,7 +3572,7 @@ dokodemoDoorUnblockNetflix() {
 	echoContent skyBlue "\n function 1/${totalProgress} : Any door floor machine unlock Netflix"
 	echoContent red "\n=============================================================="
 	echoContent yellow "# Precautions"
-	echoContent yellow "Any door unlock detailed, please check this article[https://github.com/mack-a/v2ray-agent/blob/master/documents/netflix/dokodemo-unblock_netflix.md]\n"
+	echoContent yellow "Any door unlock detailed, please check this article[https://github.com/cary-sas/v2ray-agent/blob/master/documents/netflix/dokodemo-unblock_netflix.md]\n"
 
 	echoContent yellow "1.Add an outbound"
 	echoContent yellow "2.Adding a station"
@@ -4193,9 +4193,9 @@ subscribe() {
 menu() {
 	cd "$HOME" || exit
 	echoContent red "\n=============================================================="
-	echoContent green "author：mack-a"
+	echoContent green "author：cary-sas"
 	echoContent green "current version：v2.5.28"
-	echoContent green "Github：https://github.com/mack-a/v2ray-agent"
+	echoContent green "Github：https://github.com/cary-sas/v2ray-agent"
 	echoContent green "describe：Eight-in-one copy script\c"
 	showInstallStatus
 	echoContent red "\n=============================================================="
